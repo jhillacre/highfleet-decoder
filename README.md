@@ -30,7 +30,7 @@ A command line interface for dealing with HighFleet radio intercepts.
 
 `$ python highfleet-decoder.py`
 
-[(What the program looks like.)](./example_startup.png)
+![(What the program looks like.)](./example_startup.png)
 
 * Follow onscreen prompts to
  * capture message
