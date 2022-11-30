@@ -159,12 +159,8 @@ class Message:
                 int(bbox[3] * full_screen.height / 1200),
             )
             self._image = ImageGrab.grab(bbox=bbox, include_layered_windows=True)
-            # for debugging, let's save the image
-            self._image.save(f"message.png")
             # convert to greyscale
             self._image = self._image.convert("L")
-            # for debugging, let's save the image
-            self._image.save(f"message_greyscale.png")
         return self._image
 
     @property
@@ -479,7 +475,7 @@ class Main:
         # these groups have the same differences, so return the amount of shifts needed to get from source to target, once for each group
         # if the word isn't long enough return a partial code
         return tuple(
-            Main.custom_ord(target_group[0]) - Main.custom_ord(source_group[0])
+            Main.custom_ord(source_group[0]) - Main.custom_ord(target_group[0])
             for target_group, source_group in zip(target_groups, source_groups)
             if target_group and source_group
         )
@@ -508,7 +504,7 @@ class Main:
                 continue
             break
         # rotate the code_diff so the nob number is the first element
-        code_diff = code_diff[int(nob) - 1 :] + code_diff[: int(nob) - 1]
+        code_diff = code_diff[-int(nob) + 1 :] + code_diff[: -int(nob) + 1]
         while True:
             print("What is the value of that nob? (0-35)")
             value = input()
