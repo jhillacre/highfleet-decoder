@@ -24,9 +24,9 @@ A command line interface for dealing with HighFleet radio intercepts.
 
 ## Primer
 
-What are these messages and how do they work?
+What are these messages and how do they work? Check out this guide on youtube:
 
-https://www.youtube.com/watch?v=6jaeZ4A-38g
+[![Radio Messages Guide (intel gathering and decryption) | Highfleet](https://img.youtube.com/vi/6jaeZ4A-38g/0.jpg)](https://www.youtube.com/watch?v=6jaeZ4A-38g)
 
 ## Install
 
