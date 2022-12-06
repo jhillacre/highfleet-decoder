@@ -13,13 +13,20 @@ A command line interface for dealing with HighFleet radio intercepts.
 ---
 
 * [highfleet-decoder](#highfleet-decoder)
-  * [License](#license)
+  * [Primer](#primer)
   * [Install](#install)
   * [Usage](#usage)
   * [Tips](#tips)
   * [Todo](#todo)
+  * [License](#license)
 
 ---
+
+## Primer
+
+What are these messages and how do they work?
+
+https://www.youtube.com/watch?v=6jaeZ4A-38g
 
 ## Install
 
