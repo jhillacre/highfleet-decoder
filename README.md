@@ -38,7 +38,7 @@ What are these messages, and how do they work? Check out this guide on YouTube:
 
 ## Usage
 
-`$ pipenv run highfleet-decoder.py`
+`$ pipenv run python highfleet-decoder.py`
 
 ![(What the program looks like.)](./example_startup.png)
 
