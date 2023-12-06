@@ -111,7 +111,7 @@ class Message:
             or all(c in string.digits for c in word)
             or word.startswith("=")
             or word.endswith("=")
-            or (allow_mixed and all(c in (string.ascii_uppercase + "-" + string.digits) for c in word))
+            or (allow_mixed and all(c in (string.ascii_uppercase + "-" + string.digits + " ") for c in word))
         )
         contra_indicators = not word or word.startswith("-") or word.endswith("-")
         return not contra_indicators and indicators
@@ -156,7 +156,7 @@ class Message:
                         self._corrected_words.append(replaced)
                         new_replacement_words[word] = replaced
                         continue
-                # pound sings are sometimes 1s
+                # pound signs are sometimes 1s
                 if "£" in word:
                     replaced = word.replace("£", "1")
                     if self.valid_word(replaced):
@@ -205,7 +205,13 @@ class Message:
 
     def update_corrected_word(self, index: int, new_word: str):
         self._corrected_text = self.update_text_by_index(self.corrected_text, self.corrected_words, index, new_word)
-        self._corrected_words[index] = new_word
+        new_words = new_word.split(" ")
+        if len(new_words) > 1:
+            self._corrected_words[index] = new_words[0]
+            for i, word in enumerate(new_words[1:]):
+                self._corrected_words.insert(index + i, word)
+        else:
+            self._corrected_words[index] = new_word
         self.clear_words_after_corrected_words()
 
     @property
