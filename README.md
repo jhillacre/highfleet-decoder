@@ -30,12 +30,14 @@ What are these messages and how do they work? Check out this guide on youtube:
 
 ## Install
 
-1. download source or clone the repo
-2. use `pipenv` to create environment and install dependencies
+1. download the source or clone the repo
+2. install `python`, the pipenv is set up for Python 3.11
+3. install `pipenv`, `$ pip install pipenv`
+4. use `pipenv sync` to create an environment and install dependencies.
 
 ## Usage
 
-`$ python highfleet-decoder.py`
+`$ pipenv run highfleet-decoder.py`
 
 ![(What the program looks like.)](./example_startup.png)
 
