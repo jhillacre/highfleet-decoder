@@ -74,7 +74,6 @@ source = { editable = "." }
 dependencies = [
     { name = "ansicolors" },
     { name = "argparse-color-formatter" },
-    { name = "inflect" },
     { name = "pillow" },
     { name = "pytesseract" },
     { name = "tqdm" },
@@ -98,7 +97,6 @@ dev = [
 requires-dist = [
     { name = "ansicolors" },
     { name = "argparse-color-formatter" },
-    { name = "inflect" },
     { name = "ipdb", marker = "extra == 'dev'" },
     { name = "pillow" },
     { name = "pytesseract" },
@@ -113,19 +111,6 @@ dev = [
     { name = "md-toc", specifier = ">=9.0.0" },
     { name = "pytest", specifier = ">=8.4.2" },
     { name = "ruff", specifier = ">=0.13.2" },
-]
-
-[[package]]
-name = "inflect"
-version = "7.5.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "more-itertools" },
-    { name = "typeguard" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/78/c6/943357d44a21fd995723d07ccaddd78023eace03c1846049a2645d4324a3/inflect-7.5.0.tar.gz", hash = "sha256:faf19801c3742ed5a05a8ce388e0d8fe1a07f8d095c82201eb904f5d27ad571f", size = 73751, upload-time = "2024-12-28T17:11:18.897Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/8a/eb/427ed2b20a38a4ee29f24dbe4ae2dafab198674fe9a85e3d6adf9e5f5f41/inflect-7.5.0-py3-none-any.whl", hash = "sha256:2aea70e5e70c35d8350b8097396ec155ffd68def678c7ff97f51aa69c1d92344", size = 35197, upload-time = "2024-12-28T17:11:15.931Z" },
 ]
 
 [[package]]
@@ -218,15 +203,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/b5/45/3ad7b820f46daa3c0b95bb972d8962a136e452d19eea07125df958cf9055/md_toc-9.0.0.tar.gz", hash = "sha256:a4e73b59f71c20b94c8c16bc6ef3bc2e80d1d40c398050101f80c3567fda7271", size = 65352, upload-time = "2024-04-10T22:12:39.052Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/c1/0d/4b3202d4236da63d9b6b894ab7ecdbc6f6dad6e87a4970d7a22d2b315b97/md_toc-9.0.0-py3-none-any.whl", hash = "sha256:dfd57de2faf252be1d6faf9bed7eab506e1caa7c4486ab6d6d04556426d5a7a5", size = 78101, upload-time = "2024-04-10T22:12:36.754Z" },
-]
-
-[[package]]
-name = "more-itertools"
-version = "10.8.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/ea/5d/38b681d3fce7a266dd9ab73c66959406d565b3e85f21d5e66e1181d93721/more_itertools-10.8.0.tar.gz", hash = "sha256:f638ddf8a1a0d134181275fb5d58b086ead7c6a72429ad725c67503f13ba30bd", size = 137431, upload-time = "2025-09-02T15:23:11.018Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/a4/8e/469e5a4a2f5855992e425f3cb33804cc07bf18d48f2db061aec61ce50270/more_itertools-10.8.0-py3-none-any.whl", hash = "sha256:52d4362373dcf7c52546bc4af9a86ee7c4579df9a8dc268be0a2f949d376cc9b", size = 69667, upload-time = "2025-09-02T15:23:09.635Z" },
 ]
 
 [[package]]
@@ -479,18 +455,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/eb/79/72064e6a701c2183016abbbfedaba506d81e30e232a68c9f0d6f6fcd1574/traitlets-5.14.3.tar.gz", hash = "sha256:9ed0579d3502c94b4b3732ac120375cda96f923114522847de4b3bb98b96b6b7", size = 161621, upload-time = "2024-04-19T11:11:49.746Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/00/c0/8f5d070730d7836adc9c9b6408dec68c6ced86b304a9b26a14df072a6e8c/traitlets-5.14.3-py3-none-any.whl", hash = "sha256:b74e89e397b1ed28cc831db7aea759ba6640cb3de13090ca145426688ff1ac4f", size = 85359, upload-time = "2024-04-19T11:11:46.763Z" },
-]
-
-[[package]]
-name = "typeguard"
-version = "4.4.4"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "typing-extensions" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/c7/68/71c1a15b5f65f40e91b65da23b8224dad41349894535a97f63a52e462196/typeguard-4.4.4.tar.gz", hash = "sha256:3a7fd2dffb705d4d0efaed4306a704c89b9dee850b688f060a8b1615a79e5f74", size = 75203, upload-time = "2025-06-18T09:56:07.624Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/1b/a9/e3aee762739c1d7528da1c3e06d518503f8b6c439c35549b53735ba52ead/typeguard-4.4.4-py3-none-any.whl", hash = "sha256:b5f562281b6bfa1f5492470464730ef001646128b180769880468bd84b68b09e", size = 34874, upload-time = "2025-06-18T09:56:05.999Z" },
 ]
 
 [[package]]

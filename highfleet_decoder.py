@@ -2,8 +2,6 @@ import sys
 from collections.abc import Sequence
 from operator import itemgetter
 
-import inflect
-
 from src.cli import ERROR_COLOR, ask, edit_lines
 from src.crack import (
     add_tuples_in_base,
@@ -42,7 +40,18 @@ def ask_if_clear(words: list[str], dictionary_words: AppendOnlyFileBackedSet) ->
     return think_clear_text if ask("Confirm? (Y/n)", choices=["y", "n"], default="y") == "y" else not think_clear_text
 
 
-inflect_engine = inflect.engine()
+def ordinal(n: int) -> str:
+    """Convert number to ordinal string (1st, 2nd, 3rd, 4th)."""
+    if n % 100 in (11, 12, 13):  # Special case for 11th, 12th, 13th
+        return f"{n}th"
+    elif n % 10 == 1:
+        return f"{n}st"
+    elif n % 10 == 2:
+        return f"{n}nd"
+    elif n % 10 == 3:
+        return f"{n}rd"
+    else:
+        return f"{n}th"
 
 
 def ask_knobs() -> list[int]:
@@ -53,7 +62,7 @@ def ask_knobs() -> list[int]:
     while True:
         for index, knob in enumerate(knobs):
             while True:
-                knob_label = inflect_engine.ordinal(index + 1)
+                knob_label = ordinal(index + 1)
                 knob = ask(f"What is the value of the {knob_label} knob?[0-35]")
                 if knob.isdigit() and 0 <= int(knob) <= 35:
                     knobs[index] = int(knob)

@@ -3,7 +3,8 @@ import sys
 from unittest import mock
 
 sys.path.append(os.getcwd())
-from highfleet_decoder import generate_suggestions, get_potential_targets, process_text, suggest
+from highfleet_decoder import generate_suggestions, get_potential_targets, is_clear_text, ordinal, process_text, suggest
+from src.support import AppendOnlyFileBackedSet
 
 
 def test_get_potential_targets() -> None:
@@ -247,3 +248,174 @@ def test_process_text() -> None:
     for text, expected_result in expected:
         result = process_text(text)
         assert result == expected_result, f"process_text({text}) should have returned {expected_result}"
+
+
+def test_process_text_edge_cases() -> None:
+    """Test process_text with edge cases: missing sender, receiver, or both."""
+    test_cases = [
+        # Missing receiver
+        ("HELLO WORLD =SENDER", (None, "SENDER", ["HELLO", "WORLD"])),
+        # Missing sender
+        ("RECEIVER= HELLO WORLD", ("RECEIVER", None, ["HELLO", "WORLD"])),
+        # Missing both
+        ("HELLO WORLD", (None, None, ["HELLO", "WORLD"])),
+        # Empty text
+        ("", (None, None, [])),
+        # Only sender
+        ("=SENDER", (None, "SENDER", [])),
+        # Only receiver
+        ("RECEIVER=", ("RECEIVER", None, [])),
+        # Words with special characters get filtered
+        ("REC= HE@LLO WO!RLD =SEN", ("REC", "SEN", ["LLO", "RLD", "HE", "WO"])),
+    ]
+
+    for text, expected in test_cases:
+        result = process_text(text)
+        assert result == expected, f"process_text({text!r}) should return {expected}, got {result}"
+
+
+def test_is_clear_text() -> None:
+    """Test is_clear_text function with various message types."""
+    # Create a mock dictionary with common English words
+    dictionary = AppendOnlyFileBackedSet("test.txt", "test", "test")
+    dictionary.update(
+        [
+            "THE",
+            "AND",
+            "TO",
+            "OF",
+            "A",
+            "IN",
+            "FOR",
+            "IS",
+            "ON",
+            "THAT",
+            "BY",
+            "THIS",
+            "WITH",
+            "I",
+            "YOU",
+            "IT",
+            "NOT",
+            "OR",
+            "BE",
+            "ARE",
+            "FROM",
+            "AT",
+            "AS",
+            "YOUR",
+            "ALL",
+            "ANY",
+            "CAN",
+            "HAD",
+            "HER",
+            "WAS",
+            "ONE",
+            "OUR",
+            "OUT",
+            "DAY",
+            "GET",
+            "HAS",
+            "HIM",
+            "HIS",
+            "HOW",
+            "ITS",
+            "MAY",
+            "NEW",
+            "NOW",
+            "OLD",
+            "SEE",
+            "TWO",
+            "WHO",
+            "BOY",
+            "DID",
+            "HAS",
+            "LET",
+            "PUT",
+            "SAY",
+            "SHE",
+            "TOO",
+            "USE",
+        ]
+    )
+
+    test_cases = [
+        # Clear text - mostly dictionary words
+        (["THE", "AND", "TO", "OF"], True),  # 100% dictionary words
+        # Clear text - mix of dictionary words and numbers
+        (["THE", "AND", "123", "456"], True),  # 50% dict + 50% numbers > 25%
+        # Clear text - mostly numbers
+        (["123", "456", "789", "000"], True),  # 100% numbers
+        # Cipher text - no dictionary words
+        (["XYZZY", "PLUGH", "QWERT", "ASDFG"], False),  # 0% dictionary words
+        # Cipher text - very few dictionary words (< 25%)
+        (["THE", "XYZZY", "PLUGH", "QWERT", "ASDFG"], False),  # 20% < 25%
+        # Edge case - exactly 25% dictionary words (should be False)
+        (["THE", "XYZZY", "PLUGH", "QWERT"], False),  # 25% = 25%
+        # Edge case - just over 25% dictionary words (should be True)
+        (["THE", "AND", "XYZZY", "PLUGH"], True),  # 50% > 25%
+        # Empty word list
+        ([], False),  # 0/0 handled gracefully
+        # Single clear word
+        (["THE"], True),  # 100% > 25%
+        # Single cipher word
+        (["XYZZY"], False),  # 0% < 25%
+        # Mixed case with empty strings (should be filtered out)
+        (["THE", "", "AND", "XYZZY"], True),  # 2/3 ≈ 67% > 25%
+    ]
+
+    for words, expected in test_cases:
+        result = is_clear_text(words, dictionary)
+        assert result == expected, f"is_clear_text({words}) should return {expected}, got {result}"
+
+
+def test_get_potential_targets_edge_cases() -> None:
+    """Test get_potential_targets with edge cases."""
+    test_frequency = {
+        "ABC": 10,
+        "DEF": 5,
+        "GHI": 1,
+        "LONGER": 20,
+    }
+
+    test_cases = [
+        # No matches - wrong length
+        ("XY", []),
+        ("TOOLONG", []),
+        # Single match
+        ("LONGER", ["LONGER"]),
+        # Multiple matches, sorted by frequency
+        ("ABC", ["ABC", "DEF", "GHI"]),
+    ]
+
+    # Test with normal frequency dict
+    for word, expected in test_cases:
+        targets = list(get_potential_targets(word, test_frequency))
+        assert targets == expected, (
+            f"get_potential_targets({word}, test_frequency) should return {expected}, got {targets}"
+        )
+
+    # Test with empty frequency dict
+    empty_frequency = {}
+    targets = list(get_potential_targets("ABC", empty_frequency))
+    assert targets == [], f"get_potential_targets with empty frequency should return [], got {targets}"
+
+
+def test_ordinal() -> None:
+    """Test ordinal number conversion helper."""
+    test_cases = [
+        (1, "1st"),
+        (2, "2nd"),
+        (3, "3rd"),
+        (4, "4th"),
+        (5, "5th"),
+        (11, "11th"),
+        (21, "21st"),
+        (22, "22nd"),
+        (23, "23rd"),
+        (101, "101st"),
+    ]
+
+    for number, expected in test_cases:
+        result = ordinal(number)
+        assert result == expected, f"ordinal({number}) should return {expected}, got {result}"

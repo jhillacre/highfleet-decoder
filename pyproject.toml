@@ -6,12 +6,11 @@ authors = [{name = "jhillacre"}]
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "pillow",
-    "pytesseract",
-    "tqdm",
-    "ansicolors",
-    "argparse-color-formatter",
-    "inflect",
+"pillow",
+"pytesseract",
+"tqdm",
+"ansicolors",
+"argparse-color-formatter",
 ]
 
 [project.optional-dependencies]

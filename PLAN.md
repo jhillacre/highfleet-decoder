@@ -36,15 +36,17 @@ Based on Oracle analysis, the refactor is sound but needs stabilization. The ori
 
 **Status**: All missing functionality restored! Users can now avoid reprocessing duplicate messages, and the system properly tracks seen messages with optional persistence after successful cipher decoding. Partial codes are clearly identified to users.
 
-## Phase 4: Polish & Test (Quality)
+## Phase 4: Polish & Test (Quality) ✅
 
-- [ ] Write unit tests for `process_text`
-- [ ] Write unit tests for `is_clear_text`
-- [ ] Write unit tests for `get_potential_targets`
-- [ ] Write unit tests for `src.crack` functions
-- [ ] Consider replacing `inflect` with simple ordinal helper to reduce dependencies
+- [x] Write unit tests for `process_text` (enhanced with edge cases)
+- [x] Write unit tests for `is_clear_text` (comprehensive coverage)
+- [x] Write unit tests for `get_potential_targets` (enhanced with edge cases)
+- [x] Write unit tests for `src.crack` functions (already comprehensive)
+- [x] Replace `inflect` with simple ordinal helper to reduce dependencies
 
-**Goal**: Well-tested, minimal dependencies
+**Goal**: Well-tested, minimal dependencies ✅
+
+**Status**: Added comprehensive unit tests covering edge cases and boundary conditions. Replaced inflect dependency with lightweight ordinal helper. Test count increased from 18 → 22 tests, all passing.
 
 ## Known Issues Fixed by Refactor
 
