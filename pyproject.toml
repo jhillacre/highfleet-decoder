@@ -1,11 +1,43 @@
-[tool.flake8]
-exclude = ".git,*venv*"
-max-complexity = 10
-max-line-length = 120
-extend-ignore = [
-    # (flake8) Black incompatibility - see https://github.com/PyCQA/pycodestyle/issues/373
-    "E203",
+[project]
+name = "highfleet-decoder"
+version = "0.1.0"
+description = "A command line interface for dealing with HighFleet radio intercepts"
+authors = [{name = "jhillacre"}]
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "pillow",
+    "pytesseract",
+    "tqdm",
+    "ansicolors",
+    "argparse-color-formatter",
+    "inflect",
 ]
 
-[tool.black]
+[project.optional-dependencies]
+dev = [
+    "ruff",
+    "pytest",
+    "ipdb",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.ruff]
 line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "ANN", "B", "A", "C4", "T20", "SIM"]
+ignore = ["ANN101", "ANN102"]  # Missing type annotation for self/cls
+
+[tool.ruff.format]
+quote-style = "double"
+
+[dependency-groups]
+dev = [
+    "md-toc>=9.0.0",
+    "pytest>=8.4.2",
+]

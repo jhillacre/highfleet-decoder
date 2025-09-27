@@ -8,19 +8,20 @@ A command line interface for dealing with HighFleet radio intercepts.
 * generate cipher code differences by matching frequent word differences vs cipher words.
 * helps translate a code difference to a code.
 
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg?style=for-the-badge)](https://github.com/psf/black)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
----
+<!--TOC-->
+
+- [highfleet-decoder](#highfleet-decoder)
+  - [Primer](#primer)
+  - [Install](#install)
+  - [Usage](#usage)
+  - [Tips](#tips)
+  - [Todo](#todo)
+  - [License](#license)
+
+<!--TOC-->
 
-* [highfleet-decoder](#highfleet-decoder)
-  * [Primer](#primer)
-  * [Install](#install)
-  * [Usage](#usage)
-  * [Tips](#tips)
-  * [Todo](#todo)
-  * [License](#license)
-
----
 
 ## Primer
 
@@ -32,13 +33,13 @@ What are these messages, and how do they work? Check out this guide on YouTube:
 
 1. download the source or clone the repo
 2. For Windows, install tesseract, https://tesseract-ocr.github.io/tessdoc/Installation.html and add `C:\Program Files\Tesseract-OCR` to your `PATH` in your environment variables.
-3. install `python`, the pipenv is set up for Python 3.11
-4. install `pipenv`, `$ pip install pipenv`
-5. use `pipenv sync` to create an environment and install dependencies.
+3. install `python` 3.11 or later
+4. install `uv`, https://docs.astral.sh/uv/getting-started/installation/
+5. use `uv sync` to create an environment and install dependencies.
 
 ## Usage
 
-`$ pipenv run python highfleet-decoder.py`
+`$ uv run python highfleet_decoder.py`
 
 ![(What the program looks like.)](./example_startup.png)
 
@@ -54,12 +55,12 @@ The project is a rough prototype.
 
 * Valid word characters are `strings.ascii_uppercase + strings.digits + "=-"`. I haven't dealt with dashed locations yet, probably will be treated as multiple words.
 * HighFleet messages are in all caps. When correcting OCR text, your input will be transformed into uppercase.
-* When correcting senders or receivers, the equals sign must be in the right place to be detected. Receivers and senders are kept separate from body words. 
+* When correcting senders or receivers, the equals sign must be in the right place to be detected. Receivers and senders are kept separate from body words.
 * Senders and receivers must be last and first. If there is OCR text after, you should blank it or swap positions with other text.
 * `1` and `I` look the same in HighFleet's font. The project tries to deal with this by determining if the rest of the word is primarily numbers or letters.
 * Are the suggestions actually solutions?
   * Depends on the frequency list being populated somewhat.
-  * Assuming that unique words have unique difference patterns 
+  * Assuming that unique words have unique difference patterns
 
 ## Todo
 
