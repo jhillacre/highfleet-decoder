@@ -14,21 +14,21 @@ def custom_ord(char: str) -> int:
     raise ValueError(f"Invalid char {char}")
 
 
-def custom_chr(ord: int) -> str:
+def custom_chr(code: int) -> str:
     """
     Custom chr function that puts does uppercase letters then numbers (0-35)
     """
-    if not isinstance(ord, int):
-        raise TypeError(f"Expected int, got {type(ord)}")
-    if ord < 0:
-        raise ValueError(f"Expected positive int, got {ord}")
-    if ord > 35:
-        raise ValueError(f"Expected int less than 36, got {ord}")
-    if ord < 26:
-        return chr(ord + 65)
-    if ord < 36:
-        return str(ord - 26)
-    raise ValueError(f"Invalid ord {ord}")
+    if not isinstance(code, int):
+        raise TypeError(f"Expected int, got {type(code)}")
+    if code < 0:
+        raise ValueError(f"Expected positive int, got {code}")
+    if code > 35:
+        raise ValueError(f"Expected int less than 36, got {code}")
+    if code < 26:
+        return chr(code + 65)
+    if code < 36:
+        return str(code - 26)
+    raise ValueError(f"Invalid code {code}")
 
 
 def make_letter_groups(word: str) -> tuple[tuple[str]]:
@@ -48,8 +48,8 @@ def intra_letter_groups_diff(groups: tuple[tuple[str]]) -> tuple[tuple[int]]:
         return tuple(
             tuple(custom_ord(x) - custom_ord(y) for x, y in zip(group, group[1:], strict=False)) for group in groups
         )
-    except ValueError:
-        raise ValueError(f"Invalid group {groups}")
+    except ValueError as e:
+        raise ValueError(f"Invalid group {groups}") from e
 
 
 def inter_letter_groups_diff(first_groups: tuple[tuple[str]], second_groups: tuple[tuple[str]]) -> tuple[tuple[int]]:
@@ -65,8 +65,8 @@ def inter_letter_groups_diff(first_groups: tuple[tuple[str]], second_groups: tup
             tuple(custom_ord(x) - custom_ord(y) for x, y in zip(first_group, second_group, strict=False))
             for first_group, second_group in zip(first_groups, second_groups, strict=False)
         )
-    except ValueError:
-        raise ValueError(f"Invalid groups {first_groups} and {second_groups}")
+    except ValueError as e:
+        raise ValueError(f"Invalid groups {first_groups} and {second_groups}") from e
 
 
 def identical_inter_letter_groups_diff(first_groups: tuple[tuple[str]], second_groups: tuple[tuple[str]]) -> tuple[int]:
@@ -75,8 +75,8 @@ def identical_inter_letter_groups_diff(first_groups: tuple[tuple[str]], second_g
     """
     try:
         return tuple(custom_ord(x[0]) - custom_ord(y[0]) for x, y in zip(first_groups, second_groups, strict=False))
-    except ValueError:
-        raise ValueError(f"Invalid groups {first_groups} and {second_groups}")
+    except ValueError as e:
+        raise ValueError(f"Invalid groups {first_groups} and {second_groups}") from e
 
 
 def add_tuples_in_base(first_tuple: tuple[int], second_tuple: tuple[int]) -> tuple[int]:
@@ -94,13 +94,13 @@ def subtract_tuples_in_base(first_tuple: tuple[int], second_tuple: tuple[int]) -
     return tuple((first - second) % CODE_BASE for first, second in zip(first_tuple, second_tuple, strict=False))
 
 
-def rotate_tuple(tuple: tuple[int], rotate: int) -> tuple[int]:
+def rotate_tuple(tup: tuple[int], rotate: int) -> tuple[int]:
     """
     Rotate a tuple by rotate
     positive is all the items go towards the start by x with items wrapping around to the end
     negative is all the items go towards the end by x with items wrapping around to the start
     """
-    return tuple[rotate:] + tuple[:rotate]
+    return tup[rotate:] + tup[:rotate]
 
 
 def get_first_of_diffs_or_none(group: tuple[tuple[int]]) -> tuple[int]:

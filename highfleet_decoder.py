@@ -27,9 +27,7 @@ def is_clear_text(words: list[str], dictionary_words: AppendOnlyFileBackedSet) -
     for word in words:
         if word and word in dictionary_words or word.isdigit():
             clear_words += 1
-    if clear_words > len(words) / 4:
-        return True
-    return False
+    return clear_words > len(words) / 4
 
 
 def ask_if_clear(words: list[str], dictionary_words: AppendOnlyFileBackedSet) -> bool:
@@ -80,7 +78,7 @@ def get_potential_targets(word: str, frequency: dict[str, int]) -> list[str]:
 
 def suggest(
     source_type: str, source_word: str, target_word: str, code_diff: Sequence[int], original_knobs: Sequence[int]
-):
+) -> None:
     """ """
     # we don't know the knob corresponding to the first letter of the word
     first_knob = ask(
@@ -97,8 +95,15 @@ def suggest(
 
 
 def generate_suggestions(
-    receiver_frequency, sender_frequency, word_frequency, words, corrected_text, sender, receiver, seen_messages=None
-):
+    receiver_frequency: dict[str, int],
+    sender_frequency: dict[str, int],
+    word_frequency: dict[str, int],
+    words: list[str],
+    corrected_text: str,
+    sender: str | None,
+    receiver: str | None,
+    seen_messages: AppendOnlyFileBackedSet | None = None,
+) -> None:
     original_knobs = ask_knobs()
     keep_going = "y"
     for [target_words, frequency, source] in [
@@ -172,7 +177,7 @@ def process_text(text: str) -> tuple[str | None, str | None, list[str]]:
     return receiver, sender, filtered_words
 
 
-def main():
+def main() -> None:
     """
     Main Program
     - Handles the user interface and flow of the program

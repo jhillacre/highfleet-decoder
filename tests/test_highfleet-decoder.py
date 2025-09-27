@@ -6,7 +6,7 @@ sys.path.append(os.getcwd())
 from highfleet_decoder import generate_suggestions, get_potential_targets, process_text, suggest
 
 
-def test_get_potential_targets():
+def test_get_potential_targets() -> None:
     test_frequency = {
         "NORTH": 6,
         "SOUTH": 5,
@@ -39,7 +39,7 @@ def test_get_potential_targets():
         assert targets == expected_targets, f"get_potential_targets({word}) should have returned {expected_targets}"
 
 
-def test_suggest():
+def test_suggest() -> None:
     expected = [
         [
             "1",
@@ -89,7 +89,7 @@ def test_suggest():
                 )
 
 
-def test_generate_suggestions():
+def test_generate_suggestions() -> None:
     expected = [
         [
             [
@@ -237,7 +237,7 @@ def test_generate_suggestions():
                     )
 
 
-def test_process_text():
+def test_process_text() -> None:
     expected = [
         [
             "DVIBQ=\nISQ31 PSZ9J YI09 EEZWQ JIIB0 OEKXKRM70 RPMQUI QF1QKR DVI8U\n=VEVWQ",

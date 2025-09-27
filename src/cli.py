@@ -14,6 +14,8 @@ except (ImportError, ModuleNotFoundError):
     termios = None
     tty = None
 
+import contextlib
+
 from argparse_color_formatter import ColorTextWrapper
 from colors import color
 
@@ -103,14 +105,12 @@ def ask(question: str, choices: list = None, default: str = None, char_input: bo
         sys.stdout.flush()
         answer = get_answer(default)
         if char_input:
-            try:
+            with contextlib.suppress(UnicodeDecodeError, AttributeError):
                 answer = answer.decode()
-            except (UnicodeDecodeError, AttributeError):
-                pass
     return answer
 
 
-def visible_length(string):
+def visible_length(string: str) -> int:
     """
     Calculate the visible length of a string (excluding ANSI codes).
     """
@@ -130,7 +130,7 @@ def visible_length(string):
 EDITOR_INSTRUCTIONS = f"{ORANGE_COLOR('⏎')} {BLUE_COLOR('to insert lines,')} {ORANGE_COLOR('←→↑↓⇤⇥')} {BLUE_COLOR('to move cursor,')} {ORANGE_COLOR('␈,␡')} {BLUE_COLOR('to delete, and')} {ORANGE_COLOR('␛')} {BLUE_COLOR('to finish.')}"
 
 
-def edit_lines(text, max_lines=5):
+def edit_lines(text: str, max_lines: int = 5) -> str:
     """
     A simple multi-line text editor.
     """
@@ -139,19 +139,19 @@ def edit_lines(text, max_lines=5):
     prev_cursor_y = 0, 0
     pressed = ""
 
-    def clear_screen():
+    def clear_screen() -> None:
         if prev_cursor_y:
             sys.stdout.write(f"\x1b[{prev_cursor_y}A")  # move up
         sys.stdout.write("\x1b[G")  # move to the first column
         sys.stdout.write("\x1b[J")  # clear down to bottom
 
-    def draw_lines():
+    def draw_lines() -> None:
         for index, line in enumerate(lines):
             sys.stdout.write(line)
             if index < len(lines) - 1:
                 sys.stdout.write("\n")
 
-    def draw_cursor():
+    def draw_cursor() -> None:
         lines_to_move_up = len(lines) - cursor_y - 1
         if lines_to_move_up:
             sys.stdout.write(f"\x1b[{lines_to_move_up}A")  # move up

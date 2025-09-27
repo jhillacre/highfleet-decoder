@@ -91,6 +91,7 @@ dev = [
 dev = [
     { name = "md-toc" },
     { name = "pytest" },
+    { name = "ruff" },
 ]
 
 [package.metadata]
@@ -111,6 +112,7 @@ provides-extras = ["dev"]
 dev = [
     { name = "md-toc", specifier = ">=9.0.0" },
     { name = "pytest", specifier = ">=8.4.2" },
+    { name = "ruff", specifier = ">=0.13.2" },
 ]
 
 [[package]]

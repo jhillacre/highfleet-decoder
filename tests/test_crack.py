@@ -19,7 +19,7 @@ from src.crack import (
 )
 
 
-def test_custom_ord():
+def test_custom_ord() -> None:
     expected = {
         "A": 0,
         "Z": 25,
@@ -39,12 +39,12 @@ def test_custom_ord():
             except value:
                 pass
             else:
-                assert False, f"custom_ord({char}) should have raised {value}"
+                raise AssertionError(f"custom_ord({char}) should have raised {value}")
         else:
             assert custom_ord(char) == value, f"custom_ord({char}) should have returned {value}"
 
 
-def test_custom_chr():
+def test_custom_chr() -> None:
     expected = {
         0: "A",
         25: "Z",
@@ -62,12 +62,12 @@ def test_custom_chr():
             except char:
                 pass
             else:
-                assert False, f"custom_chr({value}) should have raised {char}"
+                raise AssertionError(f"custom_chr({value}) should have raised {char}")
         else:
             assert custom_chr(value) == char, f"custom_chr({value}) should have returned {char}"
 
 
-def test_make_letter_groups():
+def test_make_letter_groups() -> None:
     expected = {
         "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789": (
             ("A", "E", "I", "M", "Q", "U", "Y", "2", "6"),
@@ -136,7 +136,7 @@ def test_make_letter_groups():
         assert groups == expected_groups, f"make_letter_groups({chars}) should have returned {expected_groups}"
 
 
-def test_intra_letter_groups_diff():
+def test_intra_letter_groups_diff() -> None:
     expected = [
         [
             (
@@ -232,7 +232,7 @@ def test_intra_letter_groups_diff():
         assert diff == expected_diff, f"intra_letter_groups_diff({groups}) should have returned {expected_diff}"
 
 
-def test_inter_letter_groups_diff():
+def test_inter_letter_groups_diff() -> None:
     expected = (
         (
             (
@@ -288,7 +288,7 @@ def test_inter_letter_groups_diff():
         )
 
 
-def test_identical_inter_letter_groups_diff():
+def test_identical_inter_letter_groups_diff() -> None:
     expected = (
         (
             (
@@ -344,7 +344,7 @@ def test_identical_inter_letter_groups_diff():
         )
 
 
-def test_add_tuples_in_base():
+def test_add_tuples_in_base() -> None:
     expected = (
         (
             (1, 2, 3),
@@ -363,7 +363,7 @@ def test_add_tuples_in_base():
         )
 
 
-def test_subtract_tuples_in_base():
+def test_subtract_tuples_in_base() -> None:
     expected = (
         (
             (5, 7, 9),
@@ -382,7 +382,7 @@ def test_subtract_tuples_in_base():
         )
 
 
-def test_rotate_tuple():
+def test_rotate_tuple() -> None:
     expected = (
         (
             (1, 2, 3),
@@ -420,13 +420,13 @@ def test_rotate_tuple():
             (1, 2, 3),
         ),
     )
-    for tuple, rotate, expected_tuple in expected:
-        assert rotate_tuple(tuple, rotate) == expected_tuple, (
-            f"rotate_tuple({tuple}, {rotate}) should have returned {expected_tuple}"
+    for tup, rotate, expected_tuple in expected:
+        assert rotate_tuple(tup, rotate) == expected_tuple, (
+            f"rotate_tuple({tup}, {rotate}) should have returned {expected_tuple}"
         )
 
 
-def test_get_first_of_diffs_or_none():
+def test_get_first_of_diffs_or_none() -> None:
     expected = (
         (
             (
@@ -468,7 +468,7 @@ def test_get_first_of_diffs_or_none():
         )
 
 
-def test_normalize_intra_letter_groups_diff():
+def test_normalize_intra_letter_groups_diff() -> None:
     expected = (
         (
             ((-17, -16), (-15, -14)),
@@ -481,7 +481,7 @@ def test_normalize_intra_letter_groups_diff():
         )
 
 
-def test_normalize_inter_letter_groups_diff():
+def test_normalize_inter_letter_groups_diff() -> None:
     expected = (
         (
             (-17, -16),

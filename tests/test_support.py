@@ -1,9 +1,10 @@
+import contextlib
 import os
 
 from src.support import AppendOnlyFileBackedSet, JSONBackedDict
 
 
-def test_append_only_file_backed_set():
+def test_append_only_file_backed_set() -> None:
     try:
         # Create a temporary file for testing
         filename = "AppendOnlyFileBackedSet.txt"
@@ -22,10 +23,8 @@ def test_append_only_file_backed_set():
         assert "item3" in set_obj
 
         # Remove an item from the set
-        try:
+        with contextlib.suppress(NotImplementedError):
             set_obj.remove("item2")
-        except NotImplementedError:
-            pass
 
         # Check if the item is removed from the set
         assert "item2" in set_obj
@@ -55,7 +54,7 @@ def test_append_only_file_backed_set():
             os.remove(filename)
 
 
-def test_json_backed_dict():
+def test_json_backed_dict() -> None:
     try:
         # Create a temporary file for testing
         filename = "JSONBackedDict.json"
