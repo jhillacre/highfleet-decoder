@@ -1,12 +1,12 @@
-
 from functools import partial
-from time import sleep
+
 try:
     import msvcrt
 except (ImportError, ModuleNotFoundError):
     msvcrt = None
 import shutil
 import sys
+
 try:
     import termios
     import tty
@@ -17,20 +17,24 @@ except (ImportError, ModuleNotFoundError):
 from argparse_color_formatter import ColorTextWrapper
 from colors import color
 
-BLUE_COLOR = partial(color, fg='#0077f7', style='bold') # Blue
-ORANGE_COLOR = partial(color, fg='#F77700', style='bold') # Orange
-OPEN_PROMPT = "\x1b[38;2;127;255;0m\x1b[1m" # Green
-CLOSE_PROMPT = "\x1b[0m" # reset
-ERROR_COLOR = partial(color, fg='#FF0000', style='bold') # Red
+BLUE_COLOR = partial(color, fg="#0077f7", style="bold")  # Blue
+ORANGE_COLOR = partial(color, fg="#F77700", style="bold")  # Orange
+OPEN_PROMPT = "\x1b[38;2;127;255;0m\x1b[1m"  # Green
+CLOSE_PROMPT = "\x1b[0m"  # reset
+ERROR_COLOR = partial(color, fg="#FF0000", style="bold")  # Red
+
 
 def get_terminal_width() -> int:
     terminal_size = shutil.get_terminal_size()
     return terminal_size[0]
 
+
 text_wrapper = ColorTextWrapper(width=get_terminal_width())
+
 
 def wrap_text(text: str) -> str:
     return "\n".join(text_wrapper.wrap(text))
+
 
 def get_char(default: str = None) -> str:
     """
@@ -58,6 +62,7 @@ def get_char(default: str = None) -> str:
         print(CLOSE_PROMPT, file=sys.stdout)
     return answer
 
+
 def get_string(default: str = None) -> str:
     """
     Get a string from stdin.
@@ -71,6 +76,7 @@ def get_string(default: str = None) -> str:
         print(CLOSE_PROMPT, file=sys.stdout)
     return answer
 
+
 def ask(question: str, choices: list = None, default: str = None, char_input: bool = False) -> str:
     """
     Ask a question and return the answer.
@@ -79,9 +85,9 @@ def ask(question: str, choices: list = None, default: str = None, char_input: bo
     if choices:
         if "" in choices:
             raise ValueError("Empty string not allowed in choices")
-        if not all((x in choices for x in default)):
+        if not all(x in choices for x in default):
             raise ValueError("Default value must be in choices")
-        if not all((x.isprintable() for x in choices)):
+        if not all(x.isprintable() for x in choices):
             raise ValueError("Choices must be printable characters")
         choices_text = ORANGE_COLOR(f"[{','.join(choices)}]")
         default_text = BLUE_COLOR(f"({default})") if default else ""
@@ -103,6 +109,7 @@ def ask(question: str, choices: list = None, default: str = None, char_input: bo
                 pass
     return answer
 
+
 def visible_length(string):
     """
     Calculate the visible length of a string (excluding ANSI codes).
@@ -119,7 +126,9 @@ def visible_length(string):
             length += 1
     return length
 
+
 EDITOR_INSTRUCTIONS = f"{ORANGE_COLOR('⏎')} {BLUE_COLOR('to insert lines,')} {ORANGE_COLOR('←→↑↓⇤⇥')} {BLUE_COLOR('to move cursor,')} {ORANGE_COLOR('␈,␡')} {BLUE_COLOR('to delete, and')} {ORANGE_COLOR('␛')} {BLUE_COLOR('to finish.')}"
+
 
 def edit_lines(text, max_lines=5):
     """
@@ -132,9 +141,9 @@ def edit_lines(text, max_lines=5):
 
     def clear_screen():
         if prev_cursor_y:
-            sys.stdout.write(f"\x1b[{prev_cursor_y}A") # move up
-        sys.stdout.write("\x1b[G") # move to the first column
-        sys.stdout.write("\x1b[J") # clear down to bottom
+            sys.stdout.write(f"\x1b[{prev_cursor_y}A")  # move up
+        sys.stdout.write("\x1b[G")  # move to the first column
+        sys.stdout.write("\x1b[J")  # clear down to bottom
 
     def draw_lines():
         for index, line in enumerate(lines):
@@ -145,8 +154,8 @@ def edit_lines(text, max_lines=5):
     def draw_cursor():
         lines_to_move_up = len(lines) - cursor_y - 1
         if lines_to_move_up:
-            sys.stdout.write(f"\x1b[{lines_to_move_up}A") # move up
-        sys.stdout.write(f"\x1b[{cursor_x + 1}G") # move to column (columns start at 1)
+            sys.stdout.write(f"\x1b[{lines_to_move_up}A")  # move up
+        sys.stdout.write(f"\x1b[{cursor_x + 1}G")  # move to column (columns start at 1)
         sys.stdout.flush()
 
     print(wrap_text(EDITOR_INSTRUCTIONS) + OPEN_PROMPT)
@@ -166,7 +175,7 @@ def edit_lines(text, max_lines=5):
             pressed = str_key
         except UnicodeDecodeError:
             pass
-        if key == b'\x03':
+        if key == b"\x03":
             # ctrl-c
             raise KeyboardInterrupt
         elif key == b"\r" or key == b"\n":
@@ -195,7 +204,7 @@ def edit_lines(text, max_lines=5):
             else:
                 # delete the character before the cursor
                 cursor_x -= 1
-                lines[cursor_y] = lines[cursor_y][:cursor_x] + lines[cursor_y][cursor_x + 1:]
+                lines[cursor_y] = lines[cursor_y][:cursor_x] + lines[cursor_y][cursor_x + 1 :]
                 redraw = True
         elif key == b"\x7f":
             # delete
@@ -208,7 +217,7 @@ def edit_lines(text, max_lines=5):
                 else:
                     bell = True
             else:
-                lines[cursor_y] = lines[cursor_y][:cursor_x] + lines[cursor_y][cursor_x + 1:]
+                lines[cursor_y] = lines[cursor_y][:cursor_x] + lines[cursor_y][cursor_x + 1 :]
                 redraw = True
         elif key == b"\x1b":
             # escape
@@ -239,7 +248,7 @@ def edit_lines(text, max_lines=5):
                     else:
                         bell = True
                 else:
-                    lines[cursor_y] = lines[cursor_y][:cursor_x] + lines[cursor_y][cursor_x + 1:]
+                    lines[cursor_y] = lines[cursor_y][:cursor_x] + lines[cursor_y][cursor_x + 1 :]
                     redraw = True
             elif key == b"H":
                 # up arrow
@@ -301,4 +310,3 @@ def edit_lines(text, max_lines=5):
     sys.stdout.write(CLOSE_PROMPT + "\n")
     sys.stdout.flush()
     return result
-

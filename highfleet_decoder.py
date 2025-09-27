@@ -96,7 +96,9 @@ def suggest(
     print(f"Therefore, we think the code is {'-'.join(str(x) for x in desired_knobs)}.")
 
 
-def generate_suggestions(receiver_frequency, sender_frequency, word_frequency, words, corrected_text, sender, receiver, seen_messages=None):
+def generate_suggestions(
+    receiver_frequency, sender_frequency, word_frequency, words, corrected_text, sender, receiver, seen_messages=None
+):
     original_knobs = ask_knobs()
     keep_going = "y"
     for [target_words, frequency, source] in [
@@ -122,11 +124,11 @@ def generate_suggestions(receiver_frequency, sender_frequency, word_frequency, w
                         )
                     )
                     suggest(source, word, potential_target, inter_diff, original_knobs)
-                    
+
                     # Check if this was a partial code
                     if len(inter_diff) < GROUP_COUNT:
                         print(f"Note: This is a partial code with only {len(inter_diff)} of {GROUP_COUNT} groups.")
-                        
+
                     keep_going = ask("Continue generating suggestions?", choices=["y", "n"], default="y")
                 if keep_going == "n":
                     break
@@ -137,7 +139,7 @@ def generate_suggestions(receiver_frequency, sender_frequency, word_frequency, w
     else:
         print("We couldn't find a match for the captured cipher text.")
         print(f"The captured cipher text was:\n{corrected_text}")
-    
+
     # Optionally mark cipher message as seen if user successfully decoded it
     if seen_messages is not None:
         mark_seen = ask("Did you successfully decode this message?", choices=["y", "n"], default="n")
@@ -155,17 +157,17 @@ def process_text(text: str) -> tuple[str | None, str | None, list[str]]:
     words = processed_text.split()
     receiver_token = next((word for word in words if word.endswith("=")), None)
     sender_token = next((word for word in reversed(words) if word.startswith("=")), None)
-    
+
     # Remove tokens from words list safely
     filtered_words = []
     for word in words:
         if word != receiver_token and word != sender_token:
             filtered_words.append(word)
-    
+
     # Extract the actual receiver/sender without = signs
     receiver = receiver_token[:-1] if receiver_token else None
     sender = sender_token[1:] if sender_token else None
-    
+
     filtered_words.sort(key=len, reverse=True)
     return receiver, sender, filtered_words
 
@@ -216,12 +218,12 @@ def main():
         text = pytesseract.image_to_string(image)
         print("Please correct the text, pressing ESC to continue.")
         corrected_text = edit_lines(text)
-        
+
         # Check if we've already seen this message
         if corrected_text in seen_messages:
             print("This message has already been seen. Skipping processing.")
             continue
-            
+
         receiver, sender, words = process_text(corrected_text)
         message_is_clear = ask_if_clear(words, dictionary_words)
         if message_is_clear:
@@ -232,7 +234,7 @@ def main():
                 sender_frequency[sender] = sender_frequency.get(sender, 0) + 1
             for word in words:
                 word_frequency[word] = word_frequency.get(word, 0) + 1
-            
+
             # Mark message as seen and save all data
             seen_messages.add(corrected_text)
             receiver_frequency.save()
@@ -241,7 +243,14 @@ def main():
             seen_messages.save()
         else:
             generate_suggestions(
-                receiver_frequency, sender_frequency, word_frequency, words, corrected_text, sender, receiver, seen_messages
+                receiver_frequency,
+                sender_frequency,
+                word_frequency,
+                words,
+                corrected_text,
+                sender,
+                receiver,
+                seen_messages,
             )
 
 

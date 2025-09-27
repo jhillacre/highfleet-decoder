@@ -31,7 +31,10 @@ target-version = "py311"
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "N", "UP", "ANN", "B", "A", "C4", "T20", "SIM"]
-ignore = ["ANN101", "ANN102"]  # Missing type annotation for self/cls
+ignore = [
+    "T201",   # Allow print statements in CLI application
+    "E501",   # Line too long (formatter handles what it can)
+]
 
 [tool.ruff.format]
 quote-style = "double"

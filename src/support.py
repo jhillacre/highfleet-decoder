@@ -1,12 +1,11 @@
 import json
 
 from tqdm import tqdm
-from typing import Optional
 
 
 class AppendOnlyFileBackedSet(set):
     def __init__(
-        self, filename: str, desc: str, unit: str, is_json: Optional[bool] = None, upper_case: Optional[bool] = None
+        self, filename: str, desc: str, unit: str, is_json: bool | None = None, upper_case: bool | None = None
     ):
         super().__init__()
         self.filename = filename
@@ -25,7 +24,7 @@ class AppendOnlyFileBackedSet(set):
 
     def load(self):
         try:
-            with open(self.filename, "r") as f:
+            with open(self.filename) as f:
                 for line in tqdm(
                     f.readlines(),
                     desc=f"Loading {self.desc}",
@@ -66,7 +65,7 @@ class JSONBackedDict(dict):
 
     def load(self):
         try:
-            with open(self.filename, "r") as f:
+            with open(self.filename) as f:
                 json_dict = json.loads(f.read())
                 self.clear()
                 # I just want a cool progress bar
