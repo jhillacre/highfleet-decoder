@@ -14,14 +14,16 @@ Based on Oracle analysis, the refactor is sound but needs stabilization. The ori
 
 **Status**: Core module imports successfully! Remaining test failures are due to removed `src.message.Message` class and missing globals, not import crashes.
 
-## Phase 2: Fix Parsing & Data Safety (Critical)
+## Phase 2: Fix Parsing & Data Safety (Critical) ✅
 
-- [ ] Make `process_text` robust - handle missing sender/receiver gracefully
-- [ ] Return `Optional[str]` for sender/receiver instead of crashing on `None`
-- [ ] Guard frequency updates with `if receiver:` and `if sender:` checks
-- [ ] Avoid variable shadowing (`is_clear_text` function vs variable)
+- [x] Make `process_text` robust - handle missing sender/receiver gracefully
+- [x] Return `Optional[str]` for sender/receiver instead of crashing on `None`
+- [x] Guard frequency updates with `if receiver:` and `if sender:` checks
+- [x] Avoid variable shadowing (`is_clear_text` function vs variable)
 
-**Goal**: No crashes on malformed input, clean data persistence
+**Goal**: No crashes on malformed input, clean data persistence ✅
+
+**Status**: `process_text` now safely handles missing sender/receiver without crashes. Frequency updates are guarded against None values. Variable shadowing eliminated.
 
 ## Phase 3: Restore Missing Functionality (Feature Parity)
 

@@ -134,22 +134,28 @@ def generate_suggestions(receiver_frequency, sender_frequency, word_frequency, w
         print(f"The captured cipher text was:\n{corrected_text}")
 
 
-def process_text(text: str) -> tuple[str, str, list[str]]:
+def process_text(text: str) -> tuple[str | None, str | None, list[str]]:
     """
     Process the text to get the receiver, sender, and words
     """
     # replace all non-alphanumeric characters with spaces, sans the equals sign
     processed_text = "".join(char if char.isalnum() or char == "=" else " " for char in text)
     words = processed_text.split()
-    reciever = next((word for word in words if word.endswith("=")), None)
-    sender = next((word for word in reversed(words) if word.startswith("=")), None)
-    words.remove(reciever)
-    sender_index = len(words) - 1 - words[::-1].index(sender)
-    words.pop(sender_index)
-    receiver = reciever[:-1]
-    sender = sender[1:]
-    words.sort(key=len, reverse=True)
-    return receiver, sender, words
+    receiver_token = next((word for word in words if word.endswith("=")), None)
+    sender_token = next((word for word in reversed(words) if word.startswith("=")), None)
+    
+    # Remove tokens from words list safely
+    filtered_words = []
+    for word in words:
+        if word != receiver_token and word != sender_token:
+            filtered_words.append(word)
+    
+    # Extract the actual receiver/sender without = signs
+    receiver = receiver_token[:-1] if receiver_token else None
+    sender = sender_token[1:] if sender_token else None
+    
+    filtered_words.sort(key=len, reverse=True)
+    return receiver, sender, filtered_words
 
 
 def main():
@@ -197,10 +203,12 @@ def main():
         print("Please correct the text, pressing ESC to continue.")
         corrected_text = edit_lines(text)
         receiver, sender, words = process_text(corrected_text)
-        is_clear_text = ask_if_clear(words, dictionary_words)
-        if is_clear_text:
-            receiver_frequency[receiver] = receiver_frequency.get(receiver, 0) + 1
-            sender_frequency[sender] = sender_frequency.get(sender, 0) + 1
+        message_is_clear = ask_if_clear(words, dictionary_words)
+        if message_is_clear:
+            if receiver:
+                receiver_frequency[receiver] = receiver_frequency.get(receiver, 0) + 1
+            if sender:
+                sender_frequency[sender] = sender_frequency.get(sender, 0) + 1
             for word in words:
                 word_frequency[word] = word_frequency.get(word, 0) + 1
             receiver_frequency.save()
