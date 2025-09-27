@@ -1,2 +1,4 @@
-DO_STRETCH = False
-GROUP_COUNT = 4  # the amount of nobs in highfleet decryption codes.
+GROUP_COUNT = 4
+CODE_DIGITS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+CODE_BASE = len(CODE_DIGITS)
+BBOX = (78, 981, 571, 1136)
