@@ -14,7 +14,7 @@ from src.crack import (
     normalize_intra_letter_groups_diff,
     rotate_tuple,
 )
-from src.globals import BBOX
+from src.globals import BBOX, GROUP_COUNT
 from src.support import AppendOnlyFileBackedSet, JSONBackedDict
 
 
@@ -96,7 +96,7 @@ def suggest(
     print(f"Therefore, we think the code is {'-'.join(str(x) for x in desired_knobs)}.")
 
 
-def generate_suggestions(receiver_frequency, sender_frequency, word_frequency, words, corrected_text, sender, receiver):
+def generate_suggestions(receiver_frequency, sender_frequency, word_frequency, words, corrected_text, sender, receiver, seen_messages=None):
     original_knobs = ask_knobs()
     keep_going = "y"
     for [target_words, frequency, source] in [
@@ -122,6 +122,11 @@ def generate_suggestions(receiver_frequency, sender_frequency, word_frequency, w
                         )
                     )
                     suggest(source, word, potential_target, inter_diff, original_knobs)
+                    
+                    # Check if this was a partial code
+                    if len(inter_diff) < GROUP_COUNT:
+                        print(f"Note: This is a partial code with only {len(inter_diff)} of {GROUP_COUNT} groups.")
+                        
                     keep_going = ask("Continue generating suggestions?", choices=["y", "n"], default="y")
                 if keep_going == "n":
                     break
@@ -132,6 +137,13 @@ def generate_suggestions(receiver_frequency, sender_frequency, word_frequency, w
     else:
         print("We couldn't find a match for the captured cipher text.")
         print(f"The captured cipher text was:\n{corrected_text}")
+    
+    # Optionally mark cipher message as seen if user successfully decoded it
+    if seen_messages is not None:
+        mark_seen = ask("Did you successfully decode this message?", choices=["y", "n"], default="n")
+        if mark_seen == "y":
+            seen_messages.add(corrected_text)
+            seen_messages.save()
 
 
 def process_text(text: str) -> tuple[str | None, str | None, list[str]]:
@@ -178,10 +190,12 @@ def main():
     from PIL import ImageGrab
 
     dictionary_words = AppendOnlyFileBackedSet("words_alpha.txt", "dictionary words", " words", upper_case=True)
+    seen_messages = AppendOnlyFileBackedSet("seen_messages.txt", "seen messages", " messages", is_json=True)
     receiver_frequency = JSONBackedDict("receiver_frequency.json", "receiver frequency", " receivers")
     sender_frequency = JSONBackedDict("sender_frequency.json", "sender frequency", " senders")
     word_frequency = JSONBackedDict("word_frequency.json", "word frequency", " words")
     dictionary_words.load()
+    seen_messages.load()
     receiver_frequency.load()
     sender_frequency.load()
     word_frequency.load()
@@ -202,21 +216,32 @@ def main():
         text = pytesseract.image_to_string(image)
         print("Please correct the text, pressing ESC to continue.")
         corrected_text = edit_lines(text)
+        
+        # Check if we've already seen this message
+        if corrected_text in seen_messages:
+            print("This message has already been seen. Skipping processing.")
+            continue
+            
         receiver, sender, words = process_text(corrected_text)
         message_is_clear = ask_if_clear(words, dictionary_words)
         if message_is_clear:
+            # Record clear text message frequencies
             if receiver:
                 receiver_frequency[receiver] = receiver_frequency.get(receiver, 0) + 1
             if sender:
                 sender_frequency[sender] = sender_frequency.get(sender, 0) + 1
             for word in words:
                 word_frequency[word] = word_frequency.get(word, 0) + 1
+            
+            # Mark message as seen and save all data
+            seen_messages.add(corrected_text)
             receiver_frequency.save()
             sender_frequency.save()
             word_frequency.save()
+            seen_messages.save()
         else:
             generate_suggestions(
-                receiver_frequency, sender_frequency, word_frequency, words, corrected_text, sender, receiver
+                receiver_frequency, sender_frequency, word_frequency, words, corrected_text, sender, receiver, seen_messages
             )
 
 

@@ -25,14 +25,16 @@ Based on Oracle analysis, the refactor is sound but needs stabilization. The ori
 
 **Status**: `process_text` now safely handles missing sender/receiver without crashes. Frequency updates are guarded against None values. Variable shadowing eliminated.
 
-## Phase 3: Restore Missing Functionality (Feature Parity)
+## Phase 3: Restore Missing Functionality (Feature Parity) ✅
 
-- [ ] Reintroduce `seen_messages` tracking with `AppendOnlyFileBackedSet`
-- [ ] Add duplicate message detection
-- [ ] Restore persistence after cipher suggestions
-- [ ] Handle partial code cases (when diff length < GROUP_COUNT)
+- [x] Reintroduce `seen_messages` tracking with `AppendOnlyFileBackedSet`
+- [x] Add duplicate message detection
+- [x] Restore persistence after cipher suggestions
+- [x] Handle partial code cases (when diff length < GROUP_COUNT)
 
-**Goal**: Feature parity with original, no duplicate processing
+**Goal**: Feature parity with original, no duplicate processing ✅
+
+**Status**: All missing functionality restored! Users can now avoid reprocessing duplicate messages, and the system properly tracks seen messages with optional persistence after successful cipher decoding. Partial codes are clearly identified to users.
 
 ## Phase 4: Polish & Test (Quality)
 
