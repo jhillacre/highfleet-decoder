@@ -1,6 +1,8 @@
 import sys
+import tkinter as tk
 from collections.abc import Sequence
 from operator import itemgetter
+from typing import Any
 
 from src.cli import ERROR_COLOR, ask, edit_lines
 from src.crack import (
@@ -186,6 +188,130 @@ def process_text(text: str) -> tuple[str | None, str | None, list[str]]:
     return receiver, sender, filtered_words
 
 
+class RegionSelector:
+    """Interactive region selector overlay."""
+
+    def __init__(self) -> None:
+        self.start_x = 0
+        self.start_y = 0
+        self.end_x = 0
+        self.end_y = 0
+        self.dragging = False
+        self.selected_region = None
+
+    def select_region(self) -> tuple[int, int, int, int] | None:
+        """Show fullscreen overlay for region selection. Returns (x1, y1, x2, y2) or None if cancelled."""
+
+        # Create instruction window (fully opaque)
+        instruction_window = tk.Tk()
+        instruction_window.title("Region Selector")
+        instruction_window.attributes("-topmost", True)
+        instruction_window.geometry("600x120")
+        instruction_window.configure(bg="darkblue")
+
+        # Center instruction window
+        instruction_window.update_idletasks()
+        x = (instruction_window.winfo_screenwidth() // 2) - (instruction_window.winfo_width() // 2)
+        y = 50  # Near top of screen
+        instruction_window.geometry(f"+{x}+{y}")
+
+        # Instructions with full opacity
+        instructions = tk.Label(
+            instruction_window,
+            text="Drag to select capture region.\nPress ESC to cancel, ENTER to confirm.",
+            fg="white",
+            bg="darkblue",
+            font=("Arial", 16, "bold"),
+            justify=tk.CENTER,
+        )
+        instructions.pack(expand=True, fill=tk.BOTH, padx=10, pady=10)
+
+        # Create transparent overlay window
+        overlay = tk.Toplevel(instruction_window)
+        overlay.attributes("-fullscreen", True)
+        overlay.attributes("-alpha", 0.1)  # Very transparent
+        overlay.attributes("-topmost", True)
+        overlay.configure(bg="black")
+        overlay.overrideredirect(True)  # Remove window decorations
+
+        # Create canvas for drawing selection rectangle
+        canvas = tk.Canvas(overlay, highlightthickness=0, bg="black")
+        canvas.pack(fill=tk.BOTH, expand=True)
+
+        selection_rect = None
+
+        def on_mouse_down(event: Any) -> None:
+            nonlocal selection_rect
+            self.start_x = event.x
+            self.start_y = event.y
+            self.dragging = True
+            # Clear previous rectangle
+            if selection_rect:
+                canvas.delete(selection_rect)
+
+        def on_mouse_drag(event: Any) -> None:
+            nonlocal selection_rect
+            if self.dragging:
+                self.end_x = event.x
+                self.end_y = event.y
+
+                # Clear previous rectangle
+                if selection_rect:
+                    canvas.delete(selection_rect)
+
+                # Draw new rectangle with better visibility
+                selection_rect = canvas.create_rectangle(
+                    self.start_x,
+                    self.start_y,
+                    self.end_x,
+                    self.end_y,
+                    outline="cyan",
+                    width=3,
+                    fill="white",
+                    stipple="gray25",
+                )
+
+        def on_mouse_up(event: Any) -> None:
+            self.dragging = False
+            self.end_x = event.x
+            self.end_y = event.y
+
+        def on_key_press(event: Any) -> None:
+            if event.keysym == "Escape":
+                # Cancel selection
+                self.selected_region = None
+                instruction_window.quit()
+            elif event.keysym == "Return":
+                # Confirm selection
+                if abs(self.end_x - self.start_x) > 10 and abs(self.end_y - self.start_y) > 10:
+                    # Ensure coordinates are in correct order (x1 < x2, y1 < y2)
+                    x1, x2 = sorted([self.start_x, self.end_x])
+                    y1, y2 = sorted([self.start_y, self.end_y])
+                    self.selected_region = (x1, y1, x2, y2)
+                    instruction_window.quit()
+                else:
+                    # Selection too small
+                    pass
+
+        # Bind events - both windows need to handle keys
+        canvas.bind("<Button-1>", on_mouse_down)
+        canvas.bind("<B1-Motion>", on_mouse_drag)
+        canvas.bind("<ButtonRelease-1>", on_mouse_up)
+        overlay.bind("<KeyPress>", on_key_press)
+        instruction_window.bind("<KeyPress>", on_key_press)
+
+        # Make sure windows can receive key events
+        overlay.focus_set()
+
+        print("Region selector overlay active...")
+        print("Drag to select region, ENTER to confirm, ESC to cancel")
+
+        instruction_window.mainloop()
+        instruction_window.destroy()
+
+        return self.selected_region
+
+
 def main() -> None:
     """
     Main Program
@@ -210,24 +336,49 @@ def main() -> None:
     receiver_frequency = JSONBackedDict("receiver_frequency.json", "receiver frequency", " receivers")
     sender_frequency = JSONBackedDict("sender_frequency.json", "sender frequency", " senders")
     word_frequency = JSONBackedDict("word_frequency.json", "word frequency", " words")
+    region_config = JSONBackedDict("capture_region.json", "capture region", " region")
+
     dictionary_words.load()
     seen_messages.load()
     receiver_frequency.load()
     sender_frequency.load()
     word_frequency.load()
+    region_config.load()
 
     while True:
-        pressed = ask("Press q to quit or any other key to capture a message.", char_input=True)
+        pressed = ask("Press 'r' to select region, 'q' to quit, or any other key to capture message.", char_input=True)
         if pressed == "q":
             break
-        full_screen = ImageGrab.grab(include_layered_windows=True)
-        bbox = BBOX
-        bbox = (
-            int(bbox[0] * full_screen.width / 1920),
-            int(bbox[1] * full_screen.height / 1200),
-            int(bbox[2] * full_screen.width / 1920),
-            int(bbox[3] * full_screen.height / 1200),
-        )
+        elif pressed == "r":
+            # Region selection mode
+            print("Opening region selector...")
+            selector = RegionSelector()
+            selected_region = selector.select_region()
+
+            if selected_region:
+                region_config["bbox"] = list(selected_region)  # JSONBackedDict needs list, not tuple
+                region_config.save()
+                print(f"Region saved: {selected_region}")
+                print(f"Size: {selected_region[2] - selected_region[0]}x{selected_region[3] - selected_region[1]}")
+            else:
+                print("Region selection cancelled.")
+            continue
+        # Get capture region - use saved region if available, otherwise fallback to default
+        if "bbox" in region_config and region_config["bbox"]:
+            bbox = tuple(region_config["bbox"])
+            print(f"Using saved region: {bbox}")
+        else:
+            # Fallback to default region with scaling
+            full_screen = ImageGrab.grab(include_layered_windows=True)
+            bbox = BBOX
+            bbox = (
+                int(bbox[0] * full_screen.width / 1920),
+                int(bbox[1] * full_screen.height / 1200),
+                int(bbox[2] * full_screen.width / 1920),
+                int(bbox[3] * full_screen.height / 1200),
+            )
+            print(f"Using default scaled region: {bbox}")
+
         image = ImageGrab.grab(bbox=bbox, include_layered_windows=True).convert("L")
         text = pytesseract.image_to_string(image)
         print("Please correct the text, pressing ESC to continue.")
