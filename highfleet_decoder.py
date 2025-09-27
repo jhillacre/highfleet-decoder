@@ -242,8 +242,9 @@ class RegionSelector:
 
         def on_mouse_down(event: Any) -> None:
             nonlocal selection_rect
-            self.start_x = event.x
-            self.start_y = event.y
+            # Convert to absolute screen coordinates
+            self.start_x = event.x_root
+            self.start_y = event.y_root
             self.dragging = True
             # Clear previous rectangle
             if selection_rect:
@@ -252,19 +253,25 @@ class RegionSelector:
         def on_mouse_drag(event: Any) -> None:
             nonlocal selection_rect
             if self.dragging:
-                self.end_x = event.x
-                self.end_y = event.y
+                # Convert to absolute screen coordinates
+                self.end_x = event.x_root
+                self.end_y = event.y_root
 
                 # Clear previous rectangle
                 if selection_rect:
                     canvas.delete(selection_rect)
 
-                # Draw new rectangle with better visibility
+                # Draw new rectangle with better visibility (convert screen to canvas coordinates for drawing)
+                canvas_start_x = self.start_x - overlay.winfo_rootx() if overlay.winfo_rootx() else self.start_x
+                canvas_start_y = self.start_y - overlay.winfo_rooty() if overlay.winfo_rooty() else self.start_y
+                canvas_end_x = self.end_x - overlay.winfo_rootx() if overlay.winfo_rootx() else self.end_x
+                canvas_end_y = self.end_y - overlay.winfo_rooty() if overlay.winfo_rooty() else self.end_y
+
                 selection_rect = canvas.create_rectangle(
-                    self.start_x,
-                    self.start_y,
-                    self.end_x,
-                    self.end_y,
+                    canvas_start_x,
+                    canvas_start_y,
+                    canvas_end_x,
+                    canvas_end_y,
                     outline="cyan",
                     width=3,
                     fill="white",
@@ -273,8 +280,9 @@ class RegionSelector:
 
         def on_mouse_up(event: Any) -> None:
             self.dragging = False
-            self.end_x = event.x
-            self.end_y = event.y
+            # Convert to absolute screen coordinates
+            self.end_x = event.x_root
+            self.end_y = event.y_root
 
         def on_key_press(event: Any) -> None:
             if event.keysym == "Escape":
@@ -288,6 +296,7 @@ class RegionSelector:
                     x1, x2 = sorted([self.start_x, self.end_x])
                     y1, y2 = sorted([self.start_y, self.end_y])
                     self.selected_region = (x1, y1, x2, y2)
+                    print(f"Debug: Selected region {self.selected_region} (size: {x2 - x1}x{y2 - y1})")
                     instruction_window.quit()
                 else:
                     # Selection too small
@@ -310,6 +319,52 @@ class RegionSelector:
         instruction_window.destroy()
 
         return self.selected_region
+
+    def show_image_preview(self, image: Any, title: str = "Captured Image") -> None:
+        """Show captured image in a preview window."""
+        # Save image temporarily and open with system default viewer
+        temp_filename = "temp_preview.png"
+        image.save(temp_filename)
+
+        preview_window = tk.Tk()
+        preview_window.title(title)
+        preview_window.attributes("-topmost", True)
+        preview_window.geometry("400x200")
+
+        # Instructions about the saved image
+        info_text = f"Captured image saved as: {temp_filename}\n"
+        info_text += f"Image size: {image.size[0]}x{image.size[1]} pixels\n"
+        info_text += f"Mode: {image.mode}\n\n"
+        info_text += "Check the saved image file to verify the capture region.\n"
+        info_text += "Press any key to close this window."
+
+        info_label = tk.Label(preview_window, text=info_text, font=("Arial", 12), justify=tk.LEFT, wraplength=380)
+        info_label.pack(padx=20, pady=20)
+
+        def close_preview(event: Any = None) -> None:
+            preview_window.quit()
+
+        preview_window.bind("<KeyPress>", close_preview)
+        preview_window.focus_set()
+
+        # Center window
+        preview_window.update_idletasks()
+        screen_width = preview_window.winfo_screenwidth()
+        screen_height = preview_window.winfo_screenheight()
+        x = (screen_width // 2) - (preview_window.winfo_width() // 2)
+        y = (screen_height // 2) - (preview_window.winfo_height() // 2)
+        preview_window.geometry(f"+{x}+{y}")
+
+        print(f"Image preview saved as: {temp_filename}")
+        print("Check the file to verify your capture region is correct.")
+
+        try:
+            preview_window.mainloop()
+        finally:
+            try:
+                preview_window.destroy()
+            except tk.TclError:
+                pass  # Window already destroyed
 
 
 def main() -> None:
@@ -363,13 +418,40 @@ def main() -> None:
             else:
                 print("Region selection cancelled.")
             continue
+        # Detect DPI scaling for coordinate correction
+        try:
+            import ctypes
+
+            user32 = ctypes.windll.user32
+            screensize = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)
+
+            # Compare with PIL screen size
+            full_screen_test = ImageGrab.grab()
+
+            # Calculate scaling factor
+            scale_x = full_screen_test.width / screensize[0] if screensize[0] > 0 else 1.0
+            scale_y = full_screen_test.height / screensize[1] if screensize[1] > 0 else 1.0
+
+            if scale_x != 1.0 or scale_y != 1.0:
+                print(f"DPI scaling detected: {scale_x:.1f}× (logical {screensize} → physical {full_screen_test.size})")
+        except Exception as e:
+            print(f"Could not detect scaling: {e}")
+            scale_x = scale_y = 1.0
+
         # Get capture region - use saved region if available, otherwise fallback to default
         if "bbox" in region_config and region_config["bbox"]:
             bbox = tuple(region_config["bbox"])
             print(f"Using saved region: {bbox}")
+            print(f"Region size: {bbox[2] - bbox[0]}x{bbox[3] - bbox[1]}")
+
+            # Apply scaling correction if needed
+            if scale_x != 1.0 or scale_y != 1.0:
+                bbox = (int(bbox[0] * scale_x), int(bbox[1] * scale_y), int(bbox[2] * scale_x), int(bbox[3] * scale_y))
+                print(f"Applying {scale_x:.1f}× scaling: {bbox}")
         else:
             # Fallback to default region with scaling
-            full_screen = ImageGrab.grab(include_layered_windows=True)
+            full_screen = ImageGrab.grab()
+            print(f"Screen resolution: {full_screen.size}")
             bbox = BBOX
             bbox = (
                 int(bbox[0] * full_screen.width / 1920),
@@ -378,9 +460,48 @@ def main() -> None:
                 int(bbox[3] * full_screen.height / 1200),
             )
             print(f"Using default scaled region: {bbox}")
+            print(f"Scaled region size: {bbox[2] - bbox[0]}x{bbox[3] - bbox[1]}")
 
-        image = ImageGrab.grab(bbox=bbox, include_layered_windows=True).convert("L")
-        text = pytesseract.image_to_string(image)
+        while True:  # Capture loop - allow recapture if needed
+            # Try both capture methods to debug layering issues
+            image = ImageGrab.grab(bbox=bbox).convert("L")
+
+            # Save captured image for debugging
+            image.save("debug_captured.png")
+
+            text = pytesseract.image_to_string(image)
+            print(f"Captured {image.size[0]}×{image.size[1]} region, OCR found {len(text)} characters")
+
+            if len(text.strip()) == 0:
+                print("Warning: No text detected by OCR!")
+
+            # Show options for user
+            action = ask(
+                "'p' to preview, 'r' to recapture, 'f' for fullscreen capture, or any key to edit text", char_input=True
+            )
+
+            if action == "p":
+                # Show preview of captured image
+                selector = RegionSelector()  # We reuse for the preview method
+                selector.show_image_preview(image, f"Captured Image - Size: {image.size}")
+                continue
+            elif action == "r":
+                # Recapture - just continue the loop
+                print("Recapturing...")
+                continue
+            elif action == "f":
+                # Capture full screen for debugging
+                print("Capturing full screen for comparison...")
+                full_image = ImageGrab.grab().convert("L")
+                full_image.save("debug_fullscreen.png")
+                print(f"Full screen saved as debug_fullscreen.png (size: {full_image.size})")
+                selector = RegionSelector()
+                selector.show_image_preview(full_image, "Full Screen Capture")
+                continue
+            else:
+                # Proceed with text editing
+                break
+
         print("Please correct the text, pressing ESC to continue.")
         corrected_text = edit_lines(text)
 
