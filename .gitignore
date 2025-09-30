@@ -8,3 +8,4 @@ word_frequency.json
 seen_messages.txt
 temp_*.png
 debug_*.png
+capture_region.json
