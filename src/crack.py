@@ -72,11 +72,22 @@ def inter_letter_groups_diff(first_groups: tuple[tuple[str]], second_groups: tup
 def identical_inter_letter_groups_diff(first_groups: tuple[tuple[str]], second_groups: tuple[tuple[str]]) -> tuple[int]:
     """
     Optimized version of inter_letter_groups_diff that assumes you already checked that intra letter groups diffs are the same.
+
+    Groups can be empty when the source word is shorter than GROUP_COUNT; skip those so we can still produce
+    a partial knob diff for the positions that exist.
     """
+    diffs: list[int] = []
     try:
-        return tuple(custom_ord(x[0]) - custom_ord(y[0]) for x, y in zip(first_groups, second_groups, strict=False))
+        for first_group, second_group in zip(first_groups, second_groups, strict=False):
+            if not first_group and not second_group:
+                # No letters mapped to this knob in either word; treat as partial.
+                continue
+            if not first_group or not second_group:
+                raise ValueError(f"Mismatched empty groups {first_groups} and {second_groups}")
+            diffs.append(custom_ord(first_group[0]) - custom_ord(second_group[0]))
     except ValueError as e:
         raise ValueError(f"Invalid groups {first_groups} and {second_groups}") from e
+    return tuple(diffs)
 
 
 def add_tuples_in_base(first_tuple: tuple[int], second_tuple: tuple[int]) -> tuple[int]:

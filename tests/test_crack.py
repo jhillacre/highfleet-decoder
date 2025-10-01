@@ -288,6 +288,12 @@ def test_inter_letter_groups_diff() -> None:
         )
 
 
+def test_identical_inter_letter_groups_diff_handles_partial_groups() -> None:
+    first = make_letter_groups("KRS")
+    second = make_letter_groups("MAN")
+    assert identical_inter_letter_groups_diff(first, second) == (-2, 17, 5)
+
+
 def test_identical_inter_letter_groups_diff() -> None:
     expected = (
         (
