@@ -39,7 +39,7 @@ def ask_if_clear(words: list[str], dictionary_words: AppendOnlyFileBackedSet) ->
         print("This message is clear text.")
     else:
         print("This message seems like cipher text.")
-    return think_clear_text if ask("Confirm? (Y/n)", choices=["y", "n"], default="y") == "y" else not think_clear_text
+    return think_clear_text if ask("Confirm?", choices=["y", "n"], default="y") == "y" else not think_clear_text
 
 
 def ordinal(n: int) -> str:
@@ -88,7 +88,11 @@ def get_potential_targets(word: str, frequency: dict[str, int]) -> list[str]:
 
 
 def suggest(
-    source_type: str, source_word: str, target_word: str, code_diff: Sequence[int], original_knobs: Sequence[int]
+    source_type: str,
+    source_word: str,
+    target_word: str,
+    code_diff: Sequence[int],
+    original_knobs: Sequence[int],
 ) -> None:
     """ """
     # we don't know the knob corresponding to the first letter of the word
@@ -145,7 +149,11 @@ def generate_suggestions(
                     if len(inter_diff) < GROUP_COUNT:
                         print(f"Note: This is a partial code with only {len(inter_diff)} of {GROUP_COUNT} groups.")
 
-                    keep_going = ask("Continue generating suggestions?", choices=["y", "n"], default="y")
+                    keep_going = ask(
+                        "Continue generating suggestions?",
+                        choices=["y", "n"],
+                        default="y",
+                    )
                 if keep_going == "n":
                     break
             if keep_going == "n":
@@ -338,7 +346,13 @@ class RegionSelector:
         info_text += "Check the saved image file to verify the capture region.\n"
         info_text += "Press any key to close this window."
 
-        info_label = tk.Label(preview_window, text=info_text, font=("Arial", 12), justify=tk.LEFT, wraplength=380)
+        info_label = tk.Label(
+            preview_window,
+            text=info_text,
+            font=("Arial", 12),
+            justify=tk.LEFT,
+            wraplength=380,
+        )
         info_label.pack(padx=20, pady=20)
 
         def close_preview(event: Any = None) -> None:
@@ -401,7 +415,10 @@ def main() -> None:
     region_config.load()
 
     while True:
-        pressed = ask("Press 'r' to select region, 'q' to quit, or any other key to capture message.", char_input=True)
+        pressed = ask(
+            "Press 'r' to select region, 'q' to quit, or any other key to capture message.",
+            char_input=True,
+        )
         if pressed == "q":
             break
         elif pressed == "r":
@@ -446,7 +463,12 @@ def main() -> None:
 
             # Apply scaling correction if needed
             if scale_x != 1.0 or scale_y != 1.0:
-                bbox = (int(bbox[0] * scale_x), int(bbox[1] * scale_y), int(bbox[2] * scale_x), int(bbox[3] * scale_y))
+                bbox = (
+                    int(bbox[0] * scale_x),
+                    int(bbox[1] * scale_y),
+                    int(bbox[2] * scale_x),
+                    int(bbox[3] * scale_y),
+                )
                 print(f"Applying {scale_x:.1f}× scaling: {bbox}")
         else:
             # Fallback to default region with scaling
@@ -477,7 +499,8 @@ def main() -> None:
 
             # Show options for user
             action = ask(
-                "'p' to preview, 'r' to recapture, 'f' for fullscreen capture, or any key to edit text", char_input=True
+                "'p' to preview, 'r' to recapture, 'f' for fullscreen capture, or any key to edit text",
+                char_input=True,
             )
 
             if action == "p":
