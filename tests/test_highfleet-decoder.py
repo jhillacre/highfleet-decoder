@@ -250,6 +250,13 @@ def test_process_text() -> None:
         assert result == expected_result, f"process_text({text}) should have returned {expected_result}"
 
 
+def test_process_text_normalizes_numeric_tokens() -> None:
+    receiver, sender, words = process_text("REC= SPEED II0 90 =SND")
+    assert receiver == "REC"
+    assert sender == "SND"
+    assert words == ["SPEED", "110", "90"]
+
+
 def test_process_text_edge_cases() -> None:
     """Test process_text with edge cases: missing sender, receiver, or both."""
     test_cases = [

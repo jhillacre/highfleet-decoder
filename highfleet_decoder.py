@@ -172,13 +172,31 @@ def generate_suggestions(
             seen_messages.save()
 
 
+def _normalize_numeric_token(token: str) -> str:
+    """
+    Correct common OCR substitutions so purely numeric tokens stay numeric.
+    """
+    if not token or token.isdigit():
+        return token
+    translation_table = str.maketrans(
+        {
+            "I": "1",
+            "l": "1",
+            "O": "0",
+            "o": "0",
+        }
+    )
+    normalized = token.translate(translation_table)
+    return normalized if normalized.isdigit() else token
+
+
 def process_text(text: str) -> tuple[str | None, str | None, list[str]]:
     """
     Process the text to get the receiver, sender, and words
     """
     # replace all non-alphanumeric characters with spaces, sans the equals sign
     processed_text = "".join(char if char.isalnum() or char == "=" else " " for char in text)
-    words = processed_text.split()
+    words = [_normalize_numeric_token(word) for word in processed_text.split()]
     receiver_token = next((word for word in words if word.endswith("=")), None)
     sender_token = next((word for word in reversed(words) if word.startswith("=")), None)
 
