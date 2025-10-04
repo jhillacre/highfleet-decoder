@@ -1,3 +1,4 @@
+import locale
 from functools import partial
 
 try:
@@ -38,6 +39,33 @@ def wrap_text(text: str) -> str:
     return "\n".join(text_wrapper.wrap(text))
 
 
+def _decode_key_bytes(key: bytes) -> tuple[str | None, bool]:
+    """Decode a raw key press into a single character, allowing extended code pages."""
+    if key in {b"\x00", b"\xe0"}:
+        return None, False
+
+    encodings = ["utf-8"]
+    preferred = locale.getpreferredencoding(False)
+    if preferred:
+        encodings.append(preferred)
+    encodings.extend(["cp437", "cp1252", "latin-1"])
+
+    seen: set[str] = set()
+    for encoding in encodings:
+        if encoding in seen:
+            continue
+        seen.add(encoding)
+        try:
+            char = key.decode(encoding)
+        except (UnicodeDecodeError, LookupError):
+            continue
+        if len(char) != 1:
+            continue
+        return char, char.isprintable()
+
+    return None, False
+
+
 def get_char(default: str = None) -> str:
     """
     Get a single character from stdin.
@@ -47,19 +75,19 @@ def get_char(default: str = None) -> str:
         sys.stdout.write(OPEN_PROMPT)
         while answer is None:
             key = msvcrt.getch()
-            printable = False
-            str_key = None
-            try:
-                str_key = key.decode()
-                printable = str_key.isprintable()
-            except UnicodeDecodeError:
-                pass
-            if (b"\n" in key or b"\r" in key) and default is not None:
+            str_key, printable = _decode_key_bytes(key)
+            if key == b"\x03":
+                # Ctrl+C
+                raise KeyboardInterrupt
+            elif (b"\n" in key or b"\r" in key) and default is not None:
                 answer = default
                 print(answer, end="", file=sys.stdout)
-            elif printable:
+            elif printable and str_key is not None:
                 answer = str_key.lower()
                 print(answer, end="", file=sys.stdout)
+            elif key == b"\xe0":
+                # Special key (arrow, function key, etc.) - skip the next byte and ignore
+                msvcrt.getch()
     finally:
         print(CLOSE_PROMPT, file=sys.stdout)
     return answer
@@ -74,6 +102,9 @@ def get_string(default: str = None) -> str:
         if answer == "" and default is not None:
             answer = default
             sys.stdout.write(answer)
+    except KeyboardInterrupt:
+        print(CLOSE_PROMPT, file=sys.stdout)
+        raise
     finally:
         print(CLOSE_PROMPT, file=sys.stdout)
     return answer
@@ -99,7 +130,7 @@ def ask(question: str, choices: list = None, default: str = None, char_input: bo
             sys.stdout.flush()
             answer = get_answer(default)
             if answer not in choices:
-                print(wrap_text(f"{ERROR_COLOR('Invalid choice'): {answer!r}}"), file=sys.stderr)
+                print(wrap_text(f"{ERROR_COLOR('Invalid choice')}: {answer!r}"), file=sys.stderr)
     else:
         sys.stdout.write(wrap_text(f"{BLUE_COLOR(question)}>"))
         sys.stdout.flush()
@@ -164,17 +195,10 @@ def edit_lines(text: str, max_lines: int = 5) -> str:
 
     while True:
         key = msvcrt.getch()
-        pressed = key
-        isprintable = False
-        str_key = None
+        str_key, isprintable = _decode_key_bytes(key)
+        pressed = str_key if str_key is not None else key
         redraw = False
         bell = False
-        try:
-            str_key = key.decode()
-            isprintable = str_key.isprintable()
-            pressed = str_key
-        except UnicodeDecodeError:
-            pass
         if key == b"\x03":
             # ctrl-c
             raise KeyboardInterrupt
@@ -286,7 +310,7 @@ def edit_lines(text: str, max_lines: int = 5) -> str:
                     bell = True
             else:
                 raise ValueError(f"Invalid key: {key!r}")
-        elif isprintable:
+        elif isprintable and str_key is not None:
             # printable character
             lines[cursor_y] = lines[cursor_y][:cursor_x] + str_key + lines[cursor_y][cursor_x:]
             cursor_x += 1
