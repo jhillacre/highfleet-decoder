@@ -101,10 +101,11 @@ def suggest(
         choices=["1", "2", "3", "4"],
         default="1",
     )
-    # rotate the code_diff so the knob number is the first element
-    rotated_code_diff = rotate_tuple(code_diff, int(first_knob) - 1)
-    knobs = rotate_tuple(original_knobs, int(first_knob) - 1)
-    desired_knobs = add_tuples_in_base(knobs, rotated_code_diff)
+    # Rotate knobs to align with the word's letter groups, apply diff, then rotate back
+    rotation = int(first_knob) - 1
+    rotated_knobs = rotate_tuple(original_knobs, rotation)
+    rotated_result = add_tuples_in_base(rotated_knobs, code_diff)
+    desired_knobs = rotate_tuple(rotated_result, -rotation)
     print(f"We think {source_type} {source_word!r} is {target_word!r}, using a code difference of {code_diff!r}.")
     print(f"Therefore, we think the code is {'-'.join(str(x) for x in desired_knobs)}.")
 
@@ -200,10 +201,10 @@ def process_text(text: str) -> tuple[str | None, str | None, list[str]]:
     receiver_token = next((word for word in words if word.endswith("=")), None)
     sender_token = next((word for word in reversed(words) if word.startswith("=")), None)
 
-    # Remove tokens from words list safely
+    # Remove tokens from words list safely (exclude receiver, sender, and any word with =)
     filtered_words = []
     for word in words:
-        if word != receiver_token and word != sender_token:
+        if word != receiver_token and word != sender_token and "=" not in word:
             filtered_words.append(word)
 
     # Extract the actual receiver/sender without = signs

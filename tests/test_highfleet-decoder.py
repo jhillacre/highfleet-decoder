@@ -62,12 +62,26 @@ def test_suggest() -> None:
                 "another source type",  # source type
                 "VIHFRVJP7",  # source word
                 "MACHINERY",  # target word
-                (9, 8, 5, -2),  # code diff
+                (9, 8, 5, 34),  # code diff (normalized from -2 -> 34)
                 [2, 4, 8, 16],  # original knobs
             ),
             [
-                "We think another source type 'VIHFRVJP7' is 'MACHINERY', using a code difference of (9, 8, 5, -2).",
-                "Therefore, we think the code is 12-13-14-11.",
+                "We think another source type 'VIHFRVJP7' is 'MACHINERY', using a code difference of (9, 8, 5, 34).",
+                "Therefore, we think the code is 0-13-16-21.",
+            ],
+        ],
+        [
+            "2",
+            (
+                "the word",  # source type
+                "PJ5VNF",  # source word
+                "EXPECT",  # target word
+                (11, 22, 16, 17),  # code diff (normalized)
+                [25, 3, 29, 32],  # original knobs
+            ),
+            [
+                "We think the word 'PJ5VNF' is 'EXPECT', using a code difference of (11, 22, 16, 17).",
+                "Therefore, we think the code is 6-14-15-12.",
             ],
         ],
     ]
@@ -175,13 +189,13 @@ def test_generate_suggestions() -> None:
                     mock.call("We think the receiver 'DVIBQ' is 'BRAVO', using a code difference of (2, 4, 8, 16)."),
                     mock.call("Therefore, we think the code is 5-10-17-28."),
                     mock.call("We think the sender 'VEVWQ' is 'TANGO', using a code difference of (2, 4, 8, 16)."),
-                    mock.call("Therefore, we think the code is 10-17-28-5."),
+                    mock.call("Therefore, we think the code is 19-8-13-20."),
                     mock.call(
                         "We think the word 'OEKXKRM70' is 'MACHINERY', using a code difference of (2, 4, 8, 16)."
                     ),
-                    mock.call("Therefore, we think the code is 17-28-5-10."),
+                    mock.call("Therefore, we think the code is 11-22-11-16."),
                     mock.call("We think the word 'RPMQUI' is 'PLEASE', using a code difference of (2, 4, 8, 16)."),
-                    mock.call("Therefore, we think the code is 28-5-10-17."),
+                    mock.call("Therefore, we think the code is 7-14-25-14."),
                 ],
             ],
         ],
